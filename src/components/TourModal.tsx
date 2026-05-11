@@ -6,9 +6,9 @@ import type { Tour } from "@/lib/tours-data";
 import { sendBooking } from "@/lib/booking.functions";
 import { ymGoal } from "@/lib/analytics";
 
-const PHONE = "+7 (812) 000-00-00";
-const TG = "https://t.me/your_username";
-const WA = "https://wa.me/78120000000";
+const PHONE = "+7 (999) 636-18-10";
+const TG = "https://t.me/Piter_Tours";
+const WA = "https://wa.me/79955913432";
 
 export function TourModal({ tour, onClose }: { tour: Tour; onClose: () => void }) {
   const [showForm, setShowForm] = useState(false);

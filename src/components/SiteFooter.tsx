@@ -15,17 +15,17 @@ export function SiteFooter() {
         <div>
           <h4 className="text-sm font-semibold text-foreground">Контакты</h4>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> +7 (812) 000-00-00</li>
+            <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> +7 (999) 636-18-10</li>
             <li>ежедневно с 9:00 до 21:00</li>
           </ul>
         </div>
         <div>
           <h4 className="text-sm font-semibold text-foreground">Соцсети</h4>
           <div className="mt-3 flex gap-2">
-            <a onClick={() => ymGoal("CLICK_TELEGRAM")} href="https://t.me/your_username" target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-full bg-card text-primary shadow-sm transition hover:bg-primary hover:text-primary-foreground">
+            <a onClick={() => ymGoal("CLICK_TELEGRAM")} href="https://t.me/Piter_Tours" target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-full bg-card text-primary shadow-sm transition hover:bg-primary hover:text-primary-foreground">
               <Send className="h-4 w-4" />
             </a>
-            <a onClick={() => ymGoal("CLICK_WHATSAPP")} href="https://wa.me/78120000000" target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-full bg-card text-primary shadow-sm transition hover:bg-primary hover:text-primary-foreground">
+            <a onClick={() => ymGoal("CLICK_TELEGRAM")} href="https://t.me/Piter_Tours" target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-full bg-card text-primary shadow-sm transition hover:bg-primary hover:text-primary-foreground">
               <MessageCircle className="h-4 w-4" />
             </a>
           </div>
