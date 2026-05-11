@@ -79,8 +79,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   useEffect(() => { setTours(loadTours()); }, []);
 
   function persist(next: Tour[]) {
-    setTours(next);
     saveTours(next);
+    setTours(next);
   }
 
   function onSave(t: Tour) {
@@ -166,19 +166,31 @@ function Editor({ tour, onSave, onClose }: { tour: Tour; onSave: (t: Tour) => vo
     setT((p) => ({ ...p, [k]: v }));
   }
 
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => set("image", String(reader.result));
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImage(file, 1280, 0.8);
+      set("image", compressed);
+    } catch {
+      toast.error("Не удалось обработать изображение");
+    }
   }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!t.title.trim()) return toast.error("Укажите название");
     if (t.price <= 0) return toast.error("Укажите цену");
-    onSave(t);
+    try {
+      onSave(t);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Ошибка сохранения";
+      if (/quota/i.test(msg)) {
+        toast.error("Слишком большое изображение. Загрузите файл поменьше.");
+      } else {
+        toast.error(msg);
+      }
+    }
   }
 
   return (
@@ -212,6 +224,34 @@ function Editor({ tour, onSave, onClose }: { tour: Tour; onSave: (t: Tour) => vo
 
 const inputCls =
   "w-full rounded-2xl border border-border bg-background px-4 py-2.5 text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20";
+
+async function compressImage(file: File, maxSize = 1280, quality = 0.8): Promise<string> {
+  const dataUrl: string = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result));
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(file);
+  });
+  const img = await new Promise<HTMLImageElement>((res, rej) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => rej(new Error("bad image"));
+    i.src = dataUrl;
+  });
+  let { width, height } = img;
+  if (width > maxSize || height > maxSize) {
+    const ratio = Math.min(maxSize / width, maxSize / height);
+    width = Math.round(width * ratio);
+    height = Math.round(height * ratio);
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return dataUrl;
+  ctx.drawImage(img, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", quality);
+}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
