@@ -1,9 +1,20 @@
 import type { Tour } from "@/lib/tours-data";
 
 export function TourCard({ tour, onClick }: { tour: Tour; onClick: () => void }) {
+  const url =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/?tour=${tour.id}`
+      : `/?tour=${tour.id}`;
   return (
     <button
       onClick={onClick}
+      id={`tour-${tour.id}`}
+      data-tour-id={tour.id}
+      data-tour-name={tour.title}
+      data-tour-price={tour.price}
+      data-tour-currency="RUB"
+      data-tour-url={url}
+      data-tour-image={tour.image}
       className="group relative flex flex-col overflow-hidden rounded-3xl bg-card text-left shadow-[var(--shadow-soft)] transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[var(--shadow-glow)] focus:outline-none focus:ring-2 focus:ring-ring"
     >
       <div className="aspect-[4/3] overflow-hidden">
