@@ -1,5 +1,6 @@
 import { Phone, Send, MessageCircle } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { ymGoal } from "@/lib/analytics";
 
 export function SiteFooter() {
   return (
@@ -21,10 +22,10 @@ export function SiteFooter() {
         <div>
           <h4 className="text-sm font-semibold text-foreground">Соцсети</h4>
           <div className="mt-3 flex gap-2">
-            <a href="https://t.me/your_username" target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-full bg-card text-primary shadow-sm transition hover:bg-primary hover:text-primary-foreground">
+            <a onClick={() => ymGoal("CLICK_TELEGRAM")} href="https://t.me/your_username" target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-full bg-card text-primary shadow-sm transition hover:bg-primary hover:text-primary-foreground">
               <Send className="h-4 w-4" />
             </a>
-            <a href="https://wa.me/78120000000" target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-full bg-card text-primary shadow-sm transition hover:bg-primary hover:text-primary-foreground">
+            <a onClick={() => ymGoal("CLICK_WHATSAPP")} href="https://wa.me/78120000000" target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-full bg-card text-primary shadow-sm transition hover:bg-primary hover:text-primary-foreground">
               <MessageCircle className="h-4 w-4" />
             </a>
           </div>

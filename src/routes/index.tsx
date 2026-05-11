@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { TourCard } from "@/components/TourCard";
 import { TourModal } from "@/components/TourModal";
 import { SiteFooter } from "@/components/SiteFooter";
+import { TourJsonLd } from "@/components/TourJsonLd";
 import { loadTours, type Tour } from "@/lib/tours-data";
 
 export const Route = createFileRoute("/")({
@@ -23,9 +24,18 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [tours, setTours] = useState<Tour[]>([]);
   const [active, setActive] = useState<Tour | null>(null);
+  const [origin, setOrigin] = useState("");
 
   useEffect(() => {
-    setTours(loadTours());
+    const loaded = loadTours();
+    setTours(loaded);
+    setOrigin(window.location.origin);
+    const params = new URLSearchParams(window.location.search);
+    const tourId = params.get("tour");
+    if (tourId) {
+      const found = loaded.find((t) => t.id === tourId);
+      if (found) setActive(found);
+    }
     const refresh = () => setTours(loadTours());
     window.addEventListener("tours:updated", refresh);
     window.addEventListener("storage", refresh);
@@ -67,6 +77,7 @@ function Index() {
 
       <SiteFooter />
       {active && <TourModal tour={active} onClose={() => setActive(null)} />}
+      {tours.length > 0 && <TourJsonLd tours={tours} origin={origin} />}
     </div>
   );
 }

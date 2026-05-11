@@ -4,6 +4,7 @@ import { X, Phone, Send, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import type { Tour } from "@/lib/tours-data";
 import { sendBooking } from "@/lib/booking.functions";
+import { ymGoal } from "@/lib/analytics";
 
 const PHONE = "+7 (812) 000-00-00";
 const TG = "https://t.me/your_username";
@@ -21,11 +22,20 @@ export function TourModal({ tour, onClose }: { tour: Tour; onClose: () => void }
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
+    // Sync URL for shareable/ad-feed links
+    const prev = window.location.search;
+    const params = new URLSearchParams(prev);
+    params.set("tour", tour.id);
+    window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      const p = new URLSearchParams(window.location.search);
+      p.delete("tour");
+      const qs = p.toString();
+      window.history.replaceState(null, "", window.location.pathname + (qs ? `?${qs}` : ""));
     };
-  }, [onClose]);
+  }, [onClose, tour.id]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,6 +49,7 @@ export function TourModal({ tour, onClose }: { tour: Tour; onClose: () => void }
     try {
       const result = await send({ data: { name: name.trim(), phone: phone.trim(), tour: tour.title } });
       if (result.ok) {
+        ymGoal("SUBMIT_FORM");
         toast.success("Заявка отправлена, мы свяжемся с вами");
         onClose();
       } else {
@@ -128,13 +139,13 @@ export function TourModal({ tour, onClose }: { tour: Tour; onClose: () => void }
           <div className="space-y-2 border-t border-border pt-5">
             <p className="text-sm font-medium text-foreground">Или свяжитесь напрямую:</p>
             <div className="flex flex-wrap gap-2">
-              <a href={`tel:${PHONE.replace(/\s|\(|\)|-/g, "")}`} className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition hover:bg-accent">
+              <a onClick={() => ymGoal("CLICK_PHONE")} href={`tel:${PHONE.replace(/\s|\(|\)|-/g, "")}`} className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition hover:bg-accent">
                 <Phone className="h-4 w-4" /> {PHONE}
               </a>
-              <a href={TG} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition hover:bg-accent">
+              <a onClick={() => ymGoal("CLICK_TELEGRAM")} href={TG} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition hover:bg-accent">
                 <Send className="h-4 w-4" /> Telegram
               </a>
-              <a href={WA} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition hover:bg-accent">
+              <a onClick={() => ymGoal("CLICK_WHATSAPP")} href={WA} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition hover:bg-accent">
                 <MessageCircle className="h-4 w-4" /> WhatsApp
               </a>
             </div>
