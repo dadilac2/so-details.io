@@ -94,7 +94,7 @@ async function getLatestTelegramChatId(lovableApiKey: string, telegramApiKey: st
   if (!res.ok) return null;
   const payload = await res.json();
   const updates = Array.isArray(payload.result) ? payload.result : [];
-  const update = updates.findLast((item) => item?.message?.chat?.id);
+  const update = updates.findLast((item: { message?: { chat?: { id?: string | number } } }) => item?.message?.chat?.id);
   return update?.message?.chat?.id ? String(update.message.chat.id) : null;
 }
 
