@@ -21,7 +21,10 @@ export const sendBooking = createServerFn({ method: "POST" })
     const TELEGRAM_API_KEY = process.env.TELEGRAM_API_KEY;
     const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
     if (!LOVABLE_API_KEY || !TELEGRAM_API_KEY || !chatId) {
-      throw new Error("Telegram не настроен");
+      return {
+        ok: false,
+        error: "Telegram не настроен: проверьте подключение и TELEGRAM_ADMIN_CHAT_ID",
+      };
     }
 
     const text = `🆕 <b>Новая заявка</b>\n\n👤 Имя: <b>${escapeHtml(
@@ -40,10 +43,16 @@ export const sendBooking = createServerFn({ method: "POST" })
       body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
     });
 
+    const body = await res.text();
     if (!res.ok) {
-      const body = await res.text();
       console.error("Telegram error", res.status, body);
-      throw new Error("Не удалось отправить заявку");
+      const isChatNotFound = body.toLowerCase().includes("chat not found");
+      return {
+        ok: false,
+        error: isChatNotFound
+          ? "Telegram-чат не найден. Напишите боту в Telegram и обновите TELEGRAM_ADMIN_CHAT_ID числовым chat_id."
+          : "Не удалось отправить заявку. Попробуйте позже или свяжитесь напрямую.",
+      };
     }
     return { ok: true };
   });
