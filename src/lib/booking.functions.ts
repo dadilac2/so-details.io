@@ -71,6 +71,41 @@ export const adminLogin = createServerFn({ method: "POST" })
     return { ok: true, token: "ok" };
   });
 
+async function sendTelegramMessage(
+  lovableApiKey: string,
+  telegramApiKey: string,
+  chatId: string,
+  text: string,
+) {
+  const res = await fetch(`${GATEWAY_URL}/sendMessage`, {
+    method: "POST",
+    headers: getTelegramHeaders(lovableApiKey, telegramApiKey),
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+  });
+  return { ok: res.ok, status: res.status, body: await res.text() };
+}
+
+async function getLatestTelegramChatId(lovableApiKey: string, telegramApiKey: string) {
+  const res = await fetch(`${GATEWAY_URL}/getUpdates`, {
+    method: "POST",
+    headers: getTelegramHeaders(lovableApiKey, telegramApiKey),
+    body: JSON.stringify({ limit: 10, timeout: 0 }),
+  });
+  if (!res.ok) return null;
+  const payload = await res.json();
+  const updates = Array.isArray(payload.result) ? payload.result : [];
+  const update = updates.findLast((item) => item?.message?.chat?.id);
+  return update?.message?.chat?.id ? String(update.message.chat.id) : null;
+}
+
+function getTelegramHeaders(lovableApiKey: string, telegramApiKey: string) {
+  return {
+    Authorization: `Bearer ${lovableApiKey}`,
+    "X-Connection-Api-Key": telegramApiKey,
+    "Content-Type": "application/json",
+  };
+}
+
 function escapeHtml(s: string) {
   return s
     .replace(/&/g, "&amp;")
