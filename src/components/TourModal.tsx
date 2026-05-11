@@ -42,7 +42,7 @@ export function TourModal({ tour, onClose }: { tour: Tour; onClose: () => void }
         toast.success("Заявка отправлена, мы свяжемся с вами");
         onClose();
       } else {
-        toast.error(result.error);
+        toast.error(result.message);
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Ошибка отправки");
