@@ -19,11 +19,11 @@ export const sendBooking = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
     const TELEGRAM_API_KEY = process.env.TELEGRAM_API_KEY;
-    const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
-    if (!LOVABLE_API_KEY || !TELEGRAM_API_KEY || !chatId) {
+    const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();
+    if (!LOVABLE_API_KEY || !TELEGRAM_API_KEY) {
       return {
         ok: false,
-        message: "Telegram не настроен: проверьте подключение и TELEGRAM_ADMIN_CHAT_ID",
+        message: "Telegram не настроен: проверьте подключение Telegram-коннектора",
       };
     }
 
@@ -33,28 +33,26 @@ export const sendBooking = createServerFn({ method: "POST" })
       data.tour,
     )}</b>`;
 
-    const res = await fetch(`${GATEWAY_URL}/sendMessage`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "X-Connection-Api-Key": TELEGRAM_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
-    });
-
-    const body = await res.text();
-    if (!res.ok) {
-      console.error("Telegram error", res.status, body);
-      const isChatNotFound = body.toLowerCase().includes("chat not found");
-      return {
-        ok: false,
-        message: isChatNotFound
-          ? "Telegram-чат не найден. Напишите боту в Telegram и обновите TELEGRAM_ADMIN_CHAT_ID числовым chat_id."
-          : "Не удалось отправить заявку. Попробуйте позже или свяжитесь напрямую.",
-      };
+    if (chatId) {
+      const result = await sendTelegramMessage(LOVABLE_API_KEY, TELEGRAM_API_KEY, chatId, text);
+      if (result.ok) return { ok: true };
+      console.error("Telegram error", result.status, result.body);
+      if (!result.body.toLowerCase().includes("chat not found")) {
+        return { ok: false, message: "Не удалось отправить заявку. Попробуйте позже или свяжитесь напрямую." };
+      }
     }
-    return { ok: true };
+
+    const discoveredChatId = await getLatestTelegramChatId(LOVABLE_API_KEY, TELEGRAM_API_KEY);
+    if (discoveredChatId && discoveredChatId !== chatId) {
+      const retry = await sendTelegramMessage(LOVABLE_API_KEY, TELEGRAM_API_KEY, discoveredChatId, text);
+      if (retry.ok) return { ok: true };
+      console.error("Telegram retry error", retry.status, retry.body);
+    }
+
+    return {
+      ok: false,
+      message: "Telegram-чат не найден. Откройте подключенного бота, отправьте ему любое сообщение и повторите заявку.",
+    };
   });
 
 const adminLoginSchema = z.object({
