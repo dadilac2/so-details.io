@@ -23,7 +23,7 @@ export const sendBooking = createServerFn({ method: "POST" })
     if (!LOVABLE_API_KEY || !TELEGRAM_API_KEY || !chatId) {
       return {
         ok: false,
-        error: "Telegram не настроен: проверьте подключение и TELEGRAM_ADMIN_CHAT_ID",
+        message: "Telegram не настроен: проверьте подключение и TELEGRAM_ADMIN_CHAT_ID",
       };
     }
 
@@ -49,7 +49,7 @@ export const sendBooking = createServerFn({ method: "POST" })
       const isChatNotFound = body.toLowerCase().includes("chat not found");
       return {
         ok: false,
-        error: isChatNotFound
+        message: isChatNotFound
           ? "Telegram-чат не найден. Напишите боту в Telegram и обновите TELEGRAM_ADMIN_CHAT_ID числовым chat_id."
           : "Не удалось отправить заявку. Попробуйте позже или свяжитесь напрямую.",
       };
