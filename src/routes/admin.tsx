@@ -166,19 +166,31 @@ function Editor({ tour, onSave, onClose }: { tour: Tour; onSave: (t: Tour) => vo
     setT((p) => ({ ...p, [k]: v }));
   }
 
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => set("image", String(reader.result));
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImage(file, 1280, 0.8);
+      set("image", compressed);
+    } catch {
+      toast.error("Не удалось обработать изображение");
+    }
   }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!t.title.trim()) return toast.error("Укажите название");
     if (t.price <= 0) return toast.error("Укажите цену");
-    onSave(t);
+    try {
+      onSave(t);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Ошибка сохранения";
+      if (/quota/i.test(msg)) {
+        toast.error("Слишком большое изображение. Загрузите файл поменьше.");
+      } else {
+        toast.error(msg);
+      }
+    }
   }
 
   return (
