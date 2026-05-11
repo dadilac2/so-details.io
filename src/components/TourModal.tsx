@@ -37,9 +37,13 @@ export function TourModal({ tour, onClose }: { tour: Tour; onClose: () => void }
     if (Object.keys(errs).length) return;
     setLoading(true);
     try {
-      await send({ data: { name: name.trim(), phone: phone.trim(), tour: tour.title } });
-      toast.success("Заявка отправлена, мы свяжемся с вами");
-      onClose();
+      const result = await send({ data: { name: name.trim(), phone: phone.trim(), tour: tour.title } });
+      if (result.ok) {
+        toast.success("Заявка отправлена, мы свяжемся с вами");
+        onClose();
+      } else {
+        toast.error(result.message);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Ошибка отправки");
     } finally {
